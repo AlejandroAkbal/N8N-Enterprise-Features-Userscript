@@ -9,17 +9,19 @@
 // @homepage        https://github.com/AlejandroAkbal/N8N-Enterprise-Features-Userscript
 // @downloadURL     https://raw.githubusercontent.com/AlejandroAkbal/N8N-Enterprise-Features-Userscript/main/src/main.user.js
 // @updateURL       https://raw.githubusercontent.com/AlejandroAkbal/N8N-Enterprise-Features-Userscript/main/src/main.user.js
-// @match           https://n8n.*.*/
+// @match           https://n8n.akbal.dev/*
 // @grant           none
-// @run-at          document-idle
+// @run-at          document-start
 // @require         https://cdn.jsdelivr.net/npm/diff@5.2.0/dist/diff.min.js
 // ==/UserScript==
 
 (function () {
     'use strict'
 
+    console.log('[N8N Enterprise Features] Userscript started...')
+
     const scriptPattern = /\/assets\/index-.*\.js$/
-    const patchUrl = 'https://example.com/path/to/diff.patch'
+    const patchUrl = 'https://raw.githubusercontent.com/AlejandroAkbal/N8N-Enterprise-Features-Userscript/main/src/index.patch'
 
     // Fetch the patch content
     async function fetchPatch(url) {
@@ -59,19 +61,27 @@
 
                 if (!scriptPattern.test(node.src)) continue
 
+                console.debug('[N8N Enterprise Features] Script tag found:', node.src)
+
                 // Prevent the original script from loading
                 node.type = 'javascript/blocked'
 
                 const patch = await fetchPatch(patchUrl)
                 const modifiedText = await fetchAndModifyScript(node.src, patch)
 
+                // TODO: Insert at the same position as the original script
                 const script = document.createElement('script')
+                script.type = 'module'
                 script.textContent = modifiedText
-                document.head.appendChild(script)
+                const newChild =document.head.appendChild(script)
+
+                console.debug('[N8N Enterprise Features] Script tag modified')
             }
         }
     })
 
     // Start observing the document for script tag additions
     observer.observe(document, {childList: true, subtree: true})
+
+    console.debug('[N8N Enterprise Features] Started observer')
 })()
